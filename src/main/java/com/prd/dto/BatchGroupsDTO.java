@@ -5,7 +5,7 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class BatchGroupDTO {
+public class BatchGroupsDTO {
     private List<Long> personIds;
-    private Long groupId;
+    private Long groupsId;
 }

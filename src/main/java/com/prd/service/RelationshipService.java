@@ -7,5 +7,9 @@ import java.util.List;
 
 public interface RelationshipService extends IService<Relationship> {
 
+    Long createRelationship(Relationship relationship);
+
+    void deleteRelationship(Long id);
+
     List<Relationship> findByPersonId(Long personId);
 }

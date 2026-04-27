@@ -18,12 +18,11 @@ public class RelationTypeDictController {
 
     @GetMapping
     public Result<List<RelationTypeDict>> list() {
-        return Result.success(relationTypeDictService.list());
+        return Result.success(relationTypeDictService.listAll());
     }
 
     @PostMapping
     public Result<Integer> save(@RequestBody RelationTypeDict dict) {
-        relationTypeDictService.save(dict);
-        return Result.success(dict.getId());
+        return Result.success(relationTypeDictService.createRelationType(dict));
     }
 }

@@ -8,8 +8,8 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 @Data
-@TableName("group")
-public class Group {
+@TableName("`groups`")
+public class Groups {
     @TableId(type = IdType.AUTO)
     private Long id;
     private String name;

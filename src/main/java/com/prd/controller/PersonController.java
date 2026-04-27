@@ -1,7 +1,7 @@
 package com.prd.controller;
 
 import com.prd.common.Result;
-import com.prd.dto.BatchGroupDTO;
+import com.prd.dto.BatchGroupsDTO;
 import com.prd.dto.BatchPositionDTO;
 import com.prd.entity.Person;
 import com.prd.service.PersonService;
@@ -35,14 +35,12 @@ public class PersonController {
 
     @PostMapping
     public Result<Long> save(@RequestBody Person person) {
-        personService.save(person);
-        return Result.success(person.getId());
+        return Result.success(personService.createPerson(person));
     }
 
     @PutMapping("/{id}")
     public Result<Void> update(@PathVariable Long id, @RequestBody Person person) {
-        person.setId(id);
-        personService.updateById(person);
+        personService.updatePerson(id, person);
         return Result.success();
     }
 
@@ -53,19 +51,14 @@ public class PersonController {
     }
 
     @PutMapping("/batch/group")
-    public Result<Void> batchMoveToGroup(@RequestBody BatchGroupDTO dto) {
-        for (Long personId : dto.getPersonIds()) {
-            Person person = new Person();
-            person.setId(personId);
-            person.setGroupId(dto.getGroupId());
-            personService.updateById(person);
-        }
+    public Result<Void> batchMoveToGroup(@RequestBody BatchGroupsDTO dto) {
+        personService.batchMoveToGroup(dto);
         return Result.success();
     }
 
     @DeleteMapping("/{id}")
     public Result<Void> delete(@PathVariable Long id) {
-        personService.removeById(id);
+        personService.deletePerson(id);
         return Result.success();
     }
 }

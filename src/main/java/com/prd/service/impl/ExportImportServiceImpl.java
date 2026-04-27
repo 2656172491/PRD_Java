@@ -4,11 +4,11 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.prd.dto.ExportDataDTO;
 import com.prd.dto.ImportPreviewDTO;
 import com.prd.dto.ImportRequestDTO;
-import com.prd.entity.Group;
+import com.prd.entity.Groups;
 import com.prd.entity.Person;
 import com.prd.entity.RelationTypeDict;
 import com.prd.entity.Relationship;
-import com.prd.mapper.GroupMapper;
+import com.prd.mapper.GroupsMapper;
 import com.prd.mapper.PersonMapper;
 import com.prd.mapper.RelationTypeDictMapper;
 import com.prd.mapper.RelationshipMapper;
@@ -16,6 +16,7 @@ import com.prd.service.ExportImportService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -26,7 +27,7 @@ public class ExportImportServiceImpl implements ExportImportService {
 
     private final PersonMapper personMapper;
     private final RelationshipMapper relationshipMapper;
-    private final GroupMapper groupMapper;
+    private final GroupsMapper groupsMapper;
     private final RelationTypeDictMapper relationTypeDictMapper;
 
     @Override
@@ -34,7 +35,7 @@ public class ExportImportServiceImpl implements ExportImportService {
         ExportDataDTO dto = new ExportDataDTO();
         dto.setPersons(personMapper.selectList(null));
         dto.setRelationships(relationshipMapper.selectList(null));
-        dto.setGroups(groupMapper.selectList(null));
+        dto.setGroups(groupsMapper.selectList(null));
         List<RelationTypeDict> dictList = relationTypeDictMapper.selectList(null);
         dto.setRelationTypeDict(dictList.stream().map(RelationTypeDict::getTypeName).collect(Collectors.toList()));
         return dto;
@@ -74,23 +75,29 @@ public class ExportImportServiceImpl implements ExportImportService {
     @Override
     @Transactional
     public void importData(ImportRequestDTO request) {
+        if (request == null || request.getData() == null) {
+            throw new IllegalArgumentException("导入数据不能为空");
+        }
         ExportDataDTO data = request.getData();
         String mode = request.getMode();
+        if (!"replace".equals(mode) && !"merge".equals(mode)) {
+            throw new IllegalArgumentException("导入模式仅支持 replace 或 merge");
+        }
 
         if ("replace".equals(mode)) {
             relationshipMapper.delete(null);
             personMapper.delete(null);
-            groupMapper.delete(null);
+            groupsMapper.delete(null);
             relationTypeDictMapper.delete(null);
         }
 
         // 导入分组
         Map<Long, Long> groupIdMap = new HashMap<>();
         if (data.getGroups() != null) {
-            for (Group g : data.getGroups()) {
+            for (Groups g : data.getGroups()) {
                 Long oldId = g.getId();
                 g.setId(null);
-                groupMapper.insert(g);
+                groupsMapper.insert(g);
                 if (oldId != null) {
                     groupIdMap.put(oldId, g.getId());
                 }
@@ -159,8 +166,7 @@ public class ExportImportServiceImpl implements ExportImportService {
 
                 boolean exists = false;
                 for (Relationship existing : existingList) {
-                    if (existing.getRelationTypes() != null && r.getRelationTypes() != null
-                            && new HashSet<>(existing.getRelationTypes()).containsAll(r.getRelationTypes())) {
+                    if (sameRelationTypes(existing.getRelationTypes(), r.getRelationTypes())) {
                         exists = true;
                         break;
                     }
@@ -180,7 +186,7 @@ public class ExportImportServiceImpl implements ExportImportService {
         LambdaQueryWrapper<Person> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Person::getName, name);
         List<Person> list = personMapper.selectList(wrapper);
-        if (phone == null || phone.isEmpty()) {
+        if (!StringUtils.hasText(phone)) {
             return list.isEmpty() ? null : list.get(0);
         }
         for (Person p : list) {
@@ -189,12 +195,19 @@ public class ExportImportServiceImpl implements ExportImportService {
                 return p;
             }
         }
-        return list.isEmpty() ? null : list.get(0);
+        return null;
     }
 
     private String extractPhone(Person p) {
         if (p == null || p.getData() == null) return null;
         Object phone = p.getData().get("phone");
         return phone != null ? phone.toString() : null;
+    }
+
+    private boolean sameRelationTypes(List<String> left, List<String> right) {
+        if (left == null || right == null) {
+            return false;
+        }
+        return new HashSet<>(left).equals(new HashSet<>(right));
     }
 }

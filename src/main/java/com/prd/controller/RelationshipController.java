@@ -23,19 +23,12 @@ public class RelationshipController {
 
     @PostMapping
     public Result<Long> save(@RequestBody Relationship relationship) {
-        // 规范化：from_person_id < to_person_id
-        if (relationship.getFromPersonId() > relationship.getToPersonId()) {
-            Long temp = relationship.getFromPersonId();
-            relationship.setFromPersonId(relationship.getToPersonId());
-            relationship.setToPersonId(temp);
-        }
-        relationshipService.save(relationship);
-        return Result.success(relationship.getId());
+        return Result.success(relationshipService.createRelationship(relationship));
     }
 
     @DeleteMapping("/{id}")
     public Result<Void> delete(@PathVariable Long id) {
-        relationshipService.removeById(id);
+        relationshipService.deleteRelationship(id);
         return Result.success();
     }
 }
