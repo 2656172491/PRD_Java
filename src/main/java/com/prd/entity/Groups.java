@@ -15,5 +15,8 @@ public class Groups {
     private String name;
     private String color;
     private Boolean collapsed;
+    private Long parentId;
+    private Double positionX;
+    private Double positionY;
     private LocalDateTime createTime;
 }

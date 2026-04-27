@@ -90,6 +90,18 @@ public class RelationshipServiceImpl extends ServiceImpl<RelationshipMapper, Rel
     }
 
     @Override
+    public void updateRelationship(Long id, Relationship relationship) {
+        Relationship existing = getById(id);
+        if (existing == null) {
+            throw new IllegalArgumentException("关系不存在");
+        }
+        existing.setRelationTypes(relationship.getRelationTypes());
+        existing.setRemark(relationship.getRemark());
+        existing.setWeight(relationship.getWeight());
+        updateById(existing);
+    }
+
+    @Override
     public void deleteRelationship(Long id) {
         removeById(id);
     }

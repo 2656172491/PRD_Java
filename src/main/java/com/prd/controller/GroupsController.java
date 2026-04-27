@@ -1,6 +1,7 @@
 package com.prd.controller;
 
 import com.prd.common.Result;
+import com.prd.dto.BatchPositionDTO;
 import com.prd.entity.Groups;
 import com.prd.service.GroupsService;
 import lombok.RequiredArgsConstructor;
@@ -35,6 +36,12 @@ public class GroupsController {
     @DeleteMapping("/{id}")
     public Result<Void> delete(@PathVariable Long id) {
         groupsService.deleteGroup(id);
+        return Result.success();
+    }
+
+    @PutMapping("/batch/positions")
+    public Result<Void> batchUpdatePositions(@RequestBody BatchPositionDTO dto) {
+        groupsService.batchUpdatePositions(dto);
         return Result.success();
     }
 }

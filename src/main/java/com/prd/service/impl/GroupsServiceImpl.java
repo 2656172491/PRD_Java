@@ -1,6 +1,7 @@
 package com.prd.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.prd.dto.BatchPositionDTO;
 import com.prd.entity.Groups;
 import com.prd.mapper.GroupsMapper;
 import com.prd.service.GroupsService;
@@ -32,6 +33,20 @@ public class GroupsServiceImpl extends ServiceImpl<GroupsMapper, Groups> impleme
         baseMapper.clearGroupMembers(id);
         // 删除分组
         return removeById(id);
+    }
+
+    @Override
+    @Transactional
+    public void batchUpdatePositions(BatchPositionDTO dto) {
+        if (dto == null || dto.getPositions() == null) return;
+        for (BatchPositionDTO.PositionItem item : dto.getPositions()) {
+            if (item == null || item.getId() == null) continue;
+            Groups group = new Groups();
+            group.setId(item.getId());
+            group.setPositionX(item.getPositionX());
+            group.setPositionY(item.getPositionY());
+            baseMapper.updatePosition(group);
+        }
     }
 
     private void validateGroup(Groups groups) {

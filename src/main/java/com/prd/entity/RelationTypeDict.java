@@ -11,4 +11,5 @@ public class RelationTypeDict {
     @TableId(type = IdType.AUTO)
     private Integer id;
     private String typeName;
+    private String color;
 }

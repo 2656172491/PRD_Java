@@ -11,4 +11,7 @@ public interface GroupsMapper extends BaseMapper<Groups> {
 
     @Update("UPDATE person SET group_id = NULL WHERE group_id = #{groupId}")
     void clearGroupMembers(@Param("groupId") Long groupId);
+
+    @Update("UPDATE `groups` SET position_x = #{positionX}, position_y = #{positionY} WHERE id = #{id}")
+    void updatePosition(Groups group);
 }

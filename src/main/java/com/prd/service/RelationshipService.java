@@ -11,6 +11,8 @@ public interface RelationshipService extends IService<Relationship> {
 
     Integer rebuildVirtualRelationships(Long selfPersonId);
 
+    void updateRelationship(Long id, Relationship relationship);
+
     void deleteRelationship(Long id);
 
     List<Relationship> findByPersonId(Long personId);
