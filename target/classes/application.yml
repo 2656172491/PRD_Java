@@ -5,14 +5,10 @@ spring:
   application:
     name: personal-relationship
   datasource:
-    url: jdbc:h2:file:./data/prd;AUTO_SERVER=TRUE
-    driver-class-name: org.h2.Driver
+    url: jdbc:mysql://localhost:3306/prd?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false
+    driver-class-name: com.mysql.cj.jdbc.Driver
     username: root
-    password: Pass.123
-  h2:
-    console:
-      enabled: true
-      path: /h2-console
+    password:
   sql:
     init:
       mode: always

@@ -34,7 +34,7 @@ CREATE TABLE IF NOT EXISTS `group` (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     color VARCHAR(20),
-    collapsed BOOLEAN DEFAULT FALSE,
+    collapsed TINYINT(1) DEFAULT 0,
     create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -44,9 +44,9 @@ CREATE TABLE IF NOT EXISTS relation_type_dict (
     type_name VARCHAR(50) UNIQUE NOT NULL
 );
 
--- 插入默认关系类型
-MERGE INTO relation_type_dict (type_name) KEY(type_name) VALUES ('朋友');
-MERGE INTO relation_type_dict (type_name) KEY(type_name) VALUES ('同事');
-MERGE INTO relation_type_dict (type_name) KEY(type_name) VALUES ('家人');
-MERGE INTO relation_type_dict (type_name) KEY(type_name) VALUES ('同学');
-MERGE INTO relation_type_dict (type_name) KEY(type_name) VALUES ('合作伙伴');
+-- 插入默认关系类型（忽略重复）
+INSERT IGNORE INTO relation_type_dict (type_name) VALUES ('朋友');
+INSERT IGNORE INTO relation_type_dict (type_name) VALUES ('同事');
+INSERT IGNORE INTO relation_type_dict (type_name) VALUES ('家人');
+INSERT IGNORE INTO relation_type_dict (type_name) VALUES ('同学');
+INSERT IGNORE INTO relation_type_dict (type_name) VALUES ('合作伙伴');
