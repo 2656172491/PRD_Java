@@ -17,13 +17,7 @@ public class PersonServiceImpl extends ServiceImpl<PersonMapper, Person> impleme
     @Override
     public List<Person> searchByKeyword(String keyword) {
         LambdaQueryWrapper<Person> wrapper = new LambdaQueryWrapper<>();
-        wrapper.like(Person::getName, keyword)
-                .or()
-                .like(Person::getPhone, keyword)
-                .or()
-                .like(Person::getEmail, keyword)
-                .or()
-                .like(Person::getRemark, keyword);
+        wrapper.like(Person::getName, keyword);
         return list(wrapper);
     }
 

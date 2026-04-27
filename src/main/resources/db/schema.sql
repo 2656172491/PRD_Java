@@ -1,21 +1,14 @@
--- 联系人表
+-- 联系人表：核心字段固定列 + 其他信息全部走 data JSON
 CREATE TABLE IF NOT EXISTS person (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
-    avatar_url VARCHAR(500),
-    phone VARCHAR(20),
-    email VARCHAR(200),
-    address VARCHAR(500),
-    hobby VARCHAR(500),
-    first_met_date DATE,
-    first_met_place VARCHAR(200),
-    remark TEXT,
     group_id BIGINT,
     position_x DOUBLE,
     position_y DOUBLE,
-    custom_fields JSON,
+    data JSON,
     create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    update_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    update_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FULLTEXT INDEX idx_name (name)
 );
 
 -- 关系边表
@@ -44,7 +37,7 @@ CREATE TABLE IF NOT EXISTS relation_type_dict (
     type_name VARCHAR(50) UNIQUE NOT NULL
 );
 
--- 插入默认关系类型（忽略重复）
+-- 插入默认关系类型
 INSERT IGNORE INTO relation_type_dict (type_name) VALUES ('朋友');
 INSERT IGNORE INTO relation_type_dict (type_name) VALUES ('同事');
 INSERT IGNORE INTO relation_type_dict (type_name) VALUES ('家人');

@@ -57,7 +57,7 @@ public class ExportImportServiceImpl implements ExportImportService {
                 invalidCount++;
                 continue;
             }
-            Person existing = findByNameAndPhone(p.getName(), p.getPhone());
+            Person existing = findByNameAndPhone(p.getName(), extractPhone(p));
             if (existing == null) {
                 newCount++;
             } else {
@@ -78,7 +78,6 @@ public class ExportImportServiceImpl implements ExportImportService {
         String mode = request.getMode();
 
         if ("replace".equals(mode)) {
-            // 覆盖模式：清空所有数据
             relationshipMapper.delete(null);
             personMapper.delete(null);
             groupMapper.delete(null);
@@ -119,10 +118,9 @@ public class ExportImportServiceImpl implements ExportImportService {
                     continue;
                 }
                 Long oldId = p.getId();
-                Person existing = findByNameAndPhone(p.getName(), p.getPhone());
+                Person existing = findByNameAndPhone(p.getName(), extractPhone(p));
 
                 if ("merge".equals(mode) && existing != null) {
-                    // 更新现有记录
                     p.setId(existing.getId());
                     if (p.getGroupId() != null && groupIdMap.containsKey(p.getGroupId())) {
                         p.setGroupId(groupIdMap.get(p.getGroupId()));
@@ -130,7 +128,6 @@ public class ExportImportServiceImpl implements ExportImportService {
                     personMapper.updateById(p);
                     personIdMap.put(oldId, existing.getId());
                 } else {
-                    // 新增
                     p.setId(null);
                     if (p.getGroupId() != null && groupIdMap.containsKey(p.getGroupId())) {
                         p.setGroupId(groupIdMap.get(p.getGroupId()));
@@ -149,14 +146,12 @@ public class ExportImportServiceImpl implements ExportImportService {
                 Long fromId = personIdMap.getOrDefault(r.getFromPersonId(), r.getFromPersonId());
                 Long toId = personIdMap.getOrDefault(r.getToPersonId(), r.getToPersonId());
 
-                // 规范化
                 if (fromId > toId) {
                     Long temp = fromId;
                     fromId = toId;
                     toId = temp;
                 }
 
-                // 检查是否已存在相同关系
                 LambdaQueryWrapper<Relationship> wrapper = new LambdaQueryWrapper<>();
                 wrapper.eq(Relationship::getFromPersonId, fromId)
                         .eq(Relationship::getToPersonId, toId);
@@ -184,10 +179,22 @@ public class ExportImportServiceImpl implements ExportImportService {
     private Person findByNameAndPhone(String name, String phone) {
         LambdaQueryWrapper<Person> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Person::getName, name);
-        if (phone != null && !phone.isEmpty()) {
-            wrapper.eq(Person::getPhone, phone);
-        }
         List<Person> list = personMapper.selectList(wrapper);
+        if (phone == null || phone.isEmpty()) {
+            return list.isEmpty() ? null : list.get(0);
+        }
+        for (Person p : list) {
+            String pPhone = extractPhone(p);
+            if (phone.equals(pPhone)) {
+                return p;
+            }
+        }
         return list.isEmpty() ? null : list.get(0);
+    }
+
+    private String extractPhone(Person p) {
+        if (p == null || p.getData() == null) return null;
+        Object phone = p.getData().get("phone");
+        return phone != null ? phone.toString() : null;
     }
 }
