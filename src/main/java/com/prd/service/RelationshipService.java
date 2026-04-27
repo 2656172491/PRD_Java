@@ -9,6 +9,8 @@ public interface RelationshipService extends IService<Relationship> {
 
     Long createRelationship(Relationship relationship);
 
+    Integer rebuildVirtualRelationships(Long selfPersonId);
+
     void deleteRelationship(Long id);
 
     List<Relationship> findByPersonId(Long personId);

@@ -17,10 +17,27 @@ CREATE TABLE IF NOT EXISTS relationship (
     from_person_id BIGINT NOT NULL,
     to_person_id BIGINT NOT NULL,
     relation_types JSON NOT NULL,
+    is_virtual TINYINT(1) NOT NULL DEFAULT 0,
     remark VARCHAR(500),
     weight INT DEFAULT 1,
     create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+SET @has_is_virtual := (
+    SELECT COUNT(*)
+    FROM information_schema.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = 'relationship'
+      AND COLUMN_NAME = 'is_virtual'
+);
+SET @ddl_is_virtual := IF(
+    @has_is_virtual = 0,
+    'ALTER TABLE relationship ADD COLUMN is_virtual TINYINT(1) NOT NULL DEFAULT 0',
+    'SELECT 1'
+);
+PREPARE stmt_is_virtual FROM @ddl_is_virtual;
+EXECUTE stmt_is_virtual;
+DEALLOCATE PREPARE stmt_is_virtual;
 
 -- 分组表
 CREATE TABLE IF NOT EXISTS `groups` (

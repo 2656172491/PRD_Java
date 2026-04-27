@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -25,10 +26,12 @@ public class RelationshipServiceImpl extends ServiceImpl<RelationshipMapper, Rel
     @Transactional
     public Long createRelationship(Relationship relationship) {
         validateAndNormalize(relationship);
+        relationship.setIsVirtual(false);
 
         LambdaQueryWrapper<Relationship> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Relationship::getFromPersonId, relationship.getFromPersonId())
-                .eq(Relationship::getToPersonId, relationship.getToPersonId());
+                .eq(Relationship::getToPersonId, relationship.getToPersonId())
+                .eq(Relationship::getIsVirtual, false);
         List<Relationship> existing = list(wrapper);
         for (Relationship item : existing) {
             if (sameRelationTypes(item.getRelationTypes(), relationship.getRelationTypes())) {
@@ -38,6 +41,52 @@ public class RelationshipServiceImpl extends ServiceImpl<RelationshipMapper, Rel
 
         save(relationship);
         return relationship.getId();
+    }
+
+    @Override
+    @Transactional
+    public Integer rebuildVirtualRelationships(Long selfPersonId) {
+        if (selfPersonId == null) {
+            throw new IllegalArgumentException("中心人物不能为空");
+        }
+        Person self = personMapper.selectById(selfPersonId);
+        if (self == null) {
+            throw new IllegalArgumentException("中心人物不存在");
+        }
+
+        LambdaQueryWrapper<Relationship> deleteVirtual = new LambdaQueryWrapper<>();
+        deleteVirtual.eq(Relationship::getIsVirtual, true);
+        remove(deleteVirtual);
+
+        LambdaQueryWrapper<Relationship> realWrapper = new LambdaQueryWrapper<>();
+        realWrapper.eq(Relationship::getIsVirtual, false);
+        Set<String> realPairs = list(realWrapper)
+                .stream()
+                .map(item -> buildPairKey(item.getFromPersonId(), item.getToPersonId()))
+                .collect(Collectors.toSet());
+
+        List<Person> allPersons = personMapper.selectList(null);
+        int createdCount = 0;
+        for (Person person : allPersons) {
+            if (person == null || person.getId() == null || person.getId().equals(selfPersonId)) {
+                continue;
+            }
+            Long fromId = Math.min(selfPersonId, person.getId());
+            Long toId = Math.max(selfPersonId, person.getId());
+            if (realPairs.contains(buildPairKey(fromId, toId))) {
+                continue;
+            }
+
+            Relationship virtualRel = new Relationship();
+            virtualRel.setFromPersonId(fromId);
+            virtualRel.setToPersonId(toId);
+            virtualRel.setRelationTypes(List.of("虚拟关系"));
+            virtualRel.setIsVirtual(true);
+            virtualRel.setWeight(0);
+            save(virtualRel);
+            createdCount++;
+        }
+        return createdCount;
     }
 
     @Override
@@ -83,5 +132,9 @@ public class RelationshipServiceImpl extends ServiceImpl<RelationshipMapper, Rel
         Set<String> leftSet = new HashSet<>(left);
         Set<String> rightSet = new HashSet<>(right);
         return leftSet.equals(rightSet);
+    }
+
+    private String buildPairKey(Long fromId, Long toId) {
+        return fromId + "-" + toId;
     }
 }

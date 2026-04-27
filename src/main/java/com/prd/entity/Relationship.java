@@ -21,6 +21,9 @@ public class Relationship {
     @TableField(typeHandler = JacksonTypeHandler.class)
     private List<String> relationTypes;
 
+    @TableField("is_virtual")
+    private Boolean isVirtual;
+
     private String remark;
     private Integer weight;
     private LocalDateTime createTime;

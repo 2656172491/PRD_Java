@@ -26,6 +26,11 @@ public class RelationshipController {
         return Result.success(relationshipService.createRelationship(relationship));
     }
 
+    @PostMapping("/virtual/{selfPersonId}")
+    public Result<Integer> rebuildVirtual(@PathVariable Long selfPersonId) {
+        return Result.success(relationshipService.rebuildVirtualRelationships(selfPersonId));
+    }
+
     @DeleteMapping("/{id}")
     public Result<Void> delete(@PathVariable Long id) {
         relationshipService.deleteRelationship(id);
