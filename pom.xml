@@ -8,7 +8,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.2.5</version>
+        <version>3.5.11</version>
         <relativePath/>
     </parent>
 
@@ -21,8 +21,8 @@
 
     <properties>
         <java.version>17</java.version>
-        <mybatis-plus.version>3.5.5</mybatis-plus.version>
         <hutool.version>5.8.25</hutool.version>
+        <mybatis-plus-jsqlparser.version>1.4</mybatis-plus-jsqlparser.version>
     </properties>
 
     <dependencies>
@@ -41,8 +41,8 @@
         <!-- MyBatis Plus -->
         <dependency>
             <groupId>com.baomidou</groupId>
-            <artifactId>mybatis-plus-boot-starter</artifactId>
-            <version>${mybatis-plus.version}</version>
+            <artifactId>mybatis-plus-spring-boot3-starter</artifactId>
+            <version>3.5.15</version>
         </dependency>
 
         <!-- H2 Database -->

@@ -22,7 +22,7 @@ public class RelationTypeDictController {
     }
 
     @PostMapping
-    public Result<Long> save(@RequestBody RelationTypeDict dict) {
+    public Result<Integer> save(@RequestBody RelationTypeDict dict) {
         relationTypeDictService.save(dict);
         return Result.success(dict.getId());
     }
